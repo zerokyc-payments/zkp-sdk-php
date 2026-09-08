@@ -1,0 +1,13 @@
+{
+    "id": "evt_fixture_detected",
+    "type": "payment.detected",
+    "invoice_id": "inv_fixture_004",
+    "data": {
+        "invoice_id": "inv_fixture_004",
+        "order_id": "INV-1045",
+        "asset": "BTC",
+        "amount": "0.0002",
+        "tx_hash": "9a8b7c6d",
+        "confirmations": 0
+    }
+}

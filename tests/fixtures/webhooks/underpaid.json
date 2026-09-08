@@ -1,0 +1,14 @@
+{
+    "id": "evt_fixture_underpaid",
+    "type": "payment.underpaid",
+    "invoice_id": "inv_fixture_002",
+    "data": {
+        "invoice_id": "inv_fixture_002",
+        "order_id": "INV-1043",
+        "asset": "USDT_TRON",
+        "amount": "15.1",
+        "expected": "19.9",
+        "tx_hash": "feed0001",
+        "confirmations": 20
+    }
+}

@@ -1,0 +1,13 @@
+{
+    "id": "evt_fixture_confirmed",
+    "type": "payment.confirmed",
+    "invoice_id": "inv_fixture_001",
+    "data": {
+        "invoice_id": "inv_fixture_001",
+        "order_id": "INV-1042",
+        "asset": "USDT_TRON",
+        "amount": "19.9",
+        "tx_hash": "abc123def456",
+        "confirmations": 20
+    }
+}
