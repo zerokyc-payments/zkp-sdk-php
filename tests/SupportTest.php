@@ -56,12 +56,16 @@ final class SupportTest extends TestCase
         self::assertFalse(Money::isValid('1,5'));
     }
 
-    public function testReplayGuardDetectsDuplicates(): void
+    public function testReplayGuardIsPureUntilMarkProcessed(): void
     {
-        $store = new InMemoryEventStore();
-        $guard = new ReplayGuard($store);
+        $guard = new ReplayGuard(new InMemoryEventStore());
 
+        // pure check: a crash after this must NOT lose the retry
         self::assertFalse($guard->isDuplicate('evt_1'));
+        self::assertFalse($guard->isDuplicate('evt_1')); // still unprocessed
+
+        // only a successful order update marks the event processed
+        $guard->markProcessed('evt_1');
         self::assertTrue($guard->isDuplicate('evt_1'));
         self::assertFalse($guard->isDuplicate('evt_2'));
     }

@@ -1,7 +1,8 @@
 # zkp-sdk-php
 
 Official PHP SDK for the [ZeroKYC Pay](https://zerokyc-payments.com) crypto payment gateway.
-Framework-agnostic, zero runtime dependencies (cURL only), PHP 8.1+.
+Framework-agnostic, no third-party runtime dependencies (requires the
+PHP JSON and cURL extensions), PHP 8.1+.
 
 WHMCS, WooCommerce, Blesta, Paymenter, FOSSBilling and OpenCart adapters for
 ZeroKYC are built on this package - if you integrate anything else, build it

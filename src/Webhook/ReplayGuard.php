@@ -22,15 +22,19 @@ final class ReplayGuard
 
     /**
      * True when the event id was already processed (skip, answer 200).
-     * Records the id as seen so a concurrent retry is also caught.
+     * Pure check: it never mutates the store - an event is marked processed
+     * ONLY via markProcessed() after the local order update succeeded.
+     * Marking here would turn any crash between this check and the order
+     * update into a permanently unpaid order (the retry would be skipped).
+     *
+     * Concurrent deliveries of the same event can both pass this check;
+     * adapters that need strict single-processing should implement an
+     * atomic claim (INSERT ... ON CONFLICT / unique constraint) in their
+     * EventStore and use it as the source of truth.
      */
     public function isDuplicate(string $eventId): bool
     {
-        if ($this->store->has($eventId)) {
-            return true;
-        }
-        $this->store->markProcessed($eventId);
-        return false;
+        return $this->store->has($eventId);
     }
 
     public function markProcessed(string $eventId): void

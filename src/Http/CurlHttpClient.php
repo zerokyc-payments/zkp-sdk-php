@@ -52,6 +52,9 @@ final class CurlHttpClient implements HttpClientInterface
         $raw = curl_exec($ch);
         $errno = curl_errno($ch);
         $error = curl_error($ch);
+        // total size of ALL header blocks (100-Continue, proxy intermediates
+        // and the final response) - the only reliable split point
+        $headerSize = (int) curl_getinfo($ch, CURLINFO_HEADER_SIZE);
         curl_close($ch);
 
         if ($raw === false || $errno !== 0) {
@@ -59,16 +62,15 @@ final class CurlHttpClient implements HttpClientInterface
         }
 
         /** @var string $raw */
-        $parts = explode("\r\n\r\n", (string) $raw, 2);
-        $headerBlock = $parts[0] ?? '';
-        $responseBody = $parts[1] ?? '';
+        $headerBlock = substr((string) $raw, 0, $headerSize);
+        $responseBody = substr((string) $raw, $headerSize);
 
         $status = 0;
         $respHeaders = [];
         foreach (explode("\r\n", $headerBlock) as $line) {
             if (preg_match('#^HTTP/\S+\s+(\d+)#', $line, $m)) {
-                $status = (int) $m[1];
-                continue; // skip status lines incl. 1xx intermediates
+                $status = (int) $m[1]; // last HTTP line wins: skips 1xx intermediates
+                continue;
             }
             $sep = strpos($line, ':');
             if ($sep !== false) {
