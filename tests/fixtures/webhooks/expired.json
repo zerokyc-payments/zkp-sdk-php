@@ -1,7 +1,7 @@
 {
     "id": "evt_fixture_expired",
     "type": "invoice.expired",
-    "invoice_id": "inv_fixture_003",
+    "created_at": "2026-09-08T18:42:00Z",
     "data": {
         "invoice_id": "inv_fixture_003",
         "order_id": "INV-1044"

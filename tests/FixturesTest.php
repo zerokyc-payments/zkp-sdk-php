@@ -46,8 +46,25 @@ final class FixturesTest extends TestCase
         $verifier = new WebhookVerifier(self::SECRET);
         $event = $verifier->verify($body, $verifier->sign($body));
 
-        self::assertSame('USDT_TRON', $event->data['asset']);
-        self::assertSame('19.9', (string) $event->data['amount']);
+        self::assertSame('USDT', (string) $event->paidAsset());
+        self::assertSame('tron', (string) $event->paidNetwork());
+        self::assertSame('19.9', (string) $event->paidAmount());
         self::assertTrue($event->isPaymentConfirmed());
+    }
+
+    public function testRealPayloadShapeResolvesInvoiceIdFromData(): void
+    {
+        // exactly what the production pipeline sends (captured live 2026-09-08)
+        $body = '{"id":"evt_qhLi9","type":"payment.confirmed","created_at":"2026-09-08T18:40:00Z","data":{"invoice_id":"inv_x","order_id":"O-1","asset":"USDT_TRON","amount":"7.77"}}';
+        $verifier = new WebhookVerifier('whsec_fixture_secret');
+        $event = $verifier->verify($body, $verifier->sign($body));
+
+        self::assertSame('inv_x', $event->invoiceId);
+        self::assertSame('USDT_TRON', $event->data['asset']);
+
+        // legacy/docs-vector shape (top-level invoice_id) still resolves
+        $legacy = '{"id":"evt_t","type":"payment.confirmed","invoice_id":"inv_y"}';
+        $event = $verifier->verify($legacy, $verifier->sign($legacy));
+        self::assertSame('inv_y', $event->invoiceId);
     }
 }

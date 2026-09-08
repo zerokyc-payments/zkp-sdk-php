@@ -42,8 +42,10 @@ final class ReplayGuard
      * Payment-matching: does the confirmed webhook correspond to the local
      * order's invoice, with at least the expected amount in the expected asset?
      *
-     * amount and asset expectations are optional but recommended; amounts are
-     * decimal strings compared without floats.
+     * Asset expectations accept both spellings: "USDT" (ticker, as production
+     * events carry it) and "USDT_TRON" (asset id - the network part must then
+     * also match). minAmount is compared against the crypto amount actually
+     * received; for non-stable assets pass the amount_crypto you invoiced.
      */
     public function matchesOrder(
         WebhookEvent $event,
@@ -54,14 +56,37 @@ final class ReplayGuard
         if ($event->invoiceId !== $expectedInvoiceId) {
             return false;
         }
-        if ($asset !== null && (string) ($event->data['asset'] ?? '') !== $asset) {
+        if ($asset !== null && !$this->assetMatches($event, $asset)) {
             return false;
         }
         if ($minAmount !== null) {
-            $paid = (string) ($event->data['amount'] ?? $event->data['amount_paid'] ?? '');
-            if ($paid === '' || !Money::greaterOrEqual($paid, $minAmount)) {
+            $paid = $event->paidAmount();
+            if ($paid === null || !Money::greaterOrEqual($paid, $minAmount)) {
                 return false;
             }
+        }
+        return true;
+    }
+
+    private function assetMatches(WebhookEvent $event, string $expected): bool
+    {
+        $paidRaw = strtolower($event->paidAsset() ?? '');
+        if ($paidRaw === '') {
+            return false;
+        }
+        // expected and paid may each be a bare ticker ("usdt") or an asset id
+        // ("usdt_tron"); the network may also ride in data.option.network
+        [$expTicker, $expNetwork] = array_pad(explode('_', strtolower($expected), 2), 2, null);
+        [$paidTicker, $paidRest] = array_pad(explode('_', $paidRaw, 2), 2, null);
+        if ($paidTicker !== $expTicker) {
+            return false;
+        }
+        $paidNetwork = strtolower($event->paidNetwork() ?? '');
+        if ($paidNetwork === '') {
+            $paidNetwork = $paidRest ?? '';
+        }
+        if ($expNetwork !== null && $paidNetwork !== '' && $paidNetwork !== $expNetwork) {
+            return false;
         }
         return true;
     }

@@ -69,18 +69,33 @@ final class SupportTest extends TestCase
     public function testMatchesOrderValidatesInvoiceAmountAndAsset(): void
     {
         $guard = new ReplayGuard(new InMemoryEventStore());
+
+        // production payload shape: ticker + network nested under data.option
         $event = WebhookEvent::fromArray([
             'id' => 'evt_1',
+            'type' => 'payment.confirmed',
+            'data' => [
+                'invoice_id' => 'inv_9',
+                'option' => ['asset' => 'USDT', 'network' => 'tron', 'paid_amount' => '20.5'],
+            ],
+        ]);
+
+        self::assertTrue($guard->matchesOrder($event, 'inv_9'));
+        self::assertTrue($guard->matchesOrder($event, 'inv_9', '19.90', 'USDT'));       // ticker
+        self::assertTrue($guard->matchesOrder($event, 'inv_9', '19.90', 'USDT_TRON')); // asset id
+        self::assertTrue($guard->matchesOrder($event, 'inv_9', '20.5', 'USDT_TRON'));
+        self::assertFalse($guard->matchesOrder($event, 'inv_OTHER'));                    // wrong invoice
+        self::assertFalse($guard->matchesOrder($event, 'inv_9', '20.6'));                // under expected
+        self::assertFalse($guard->matchesOrder($event, 'inv_9', '19.90', 'BTC'));        // wrong asset
+        self::assertFalse($guard->matchesOrder($event, 'inv_9', '19.90', 'USDT_BTC'));   // wrong network part
+
+        // docs-vector shape (flat asset/amount) keeps working
+        $legacy = WebhookEvent::fromArray([
+            'id' => 'evt_2',
             'type' => 'payment.confirmed',
             'invoice_id' => 'inv_9',
             'data' => ['asset' => 'USDT_TRON', 'amount' => '20.5'],
         ]);
-
-        self::assertTrue($guard->matchesOrder($event, 'inv_9'));
-        self::assertTrue($guard->matchesOrder($event, 'inv_9', '19.90', 'USDT_TRON'));
-        self::assertTrue($guard->matchesOrder($event, 'inv_9', '20.5', 'USDT_TRON'));
-        self::assertFalse($guard->matchesOrder($event, 'inv_OTHER'));              // wrong invoice
-        self::assertFalse($guard->matchesOrder($event, 'inv_9', '20.6'));          // under expected amount
-        self::assertFalse($guard->matchesOrder($event, 'inv_9', '19.90', 'BTC'));  // wrong asset
+        self::assertTrue($guard->matchesOrder($legacy, 'inv_9', '19.90', 'USDT_TRON'));
     }
 }
