@@ -153,7 +153,7 @@ $event = $verifier->verify(
 
 ## Assets
 
-ETH, USDT (Ethereum ERC-20), USDT (TRC-20), USDC/USDT (Polygon, Arbitrum), BTC, XMR, TON, USDT-TON. Pass an
+USDT on four networks (TRC-20, BEP-20 on BSC, ERC-20 on Ethereum, TON jetton), USDC/USDT (Polygon, Arbitrum), native ETH, native BNB, native TRX, LTC, BTC, XMR and native TON. Pass an
 asset id as `payment_currency` to pin one (`USDT_TRON`), or `any` (default) to
 let the buyer choose at checkout.
 
