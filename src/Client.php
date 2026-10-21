@@ -97,6 +97,22 @@ final class Client
         );
     }
 
+    /**
+     * List the platform's settlement asset catalog (GET /v1/assets).
+     * Public endpoint: no API key required by the platform, but the
+     * configured Bearer header is sent anyway (harmless, keeps transport
+     * uniform). Integrations use this instead of hardcoding coin lists.
+     */
+    public function assets(): Response
+    {
+        return $this->send(
+            method: 'GET',
+            path: '/v1/assets',
+            mayRetry: true,
+            expectedStatus: 200,
+        );
+    }
+
     private function send(
         string $method,
         string $path,
