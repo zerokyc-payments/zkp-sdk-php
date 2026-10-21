@@ -249,6 +249,48 @@ final class ClientTest extends TestCase
             'paid_asset' => null,
         ], $overrides));
     }
+    public function testAssetsCatalogReturnsList(): void
+    {
+        $payload = [
+            'data' => [
+                [
+                    'asset_id' => 'XRP',
+                    'ticker' => 'XRP',
+                    'network' => 'ripple',
+                    'network_label' => 'XRP Ledger',
+                    'display' => 'XRP',
+                    'decimals' => 6,
+                    'display_decimals' => 6,
+                    'volatile' => true,
+                    'confirmations' => 3,
+                    'direct_mode' => 'static_amount',
+                ],
+                [
+                    'asset_id' => 'NEAR',
+                    'ticker' => 'NEAR',
+                    'network' => 'near',
+                    'network_label' => 'NEAR Protocol',
+                    'display' => 'NEAR (native)',
+                    'decimals' => 24,
+                    'display_decimals' => 8,
+                    'volatile' => true,
+                    'confirmations' => 3,
+                    'direct_mode' => 'static_amount',
+                ],
+            ],
+        ];
+        $sdk = new ZeroKYC(
+            Config::fromArray(['api_key' => 'pk_test_demo', 'base_url' => 'https://api.test']),
+            new StubHttp(fn (): Response => new Response(200, json_encode($payload), [])),
+        );
+
+        $assets = $sdk->assets();
+        self::assertCount(2, $assets);
+        self::assertSame('XRP', $assets[0]['asset_id']);
+        self::assertSame('ripple', $assets[0]['network']);
+        self::assertSame('NEAR Protocol', $assets[1]['network_label']);
+    }
+
 }
 
 /** @internal */
@@ -267,3 +309,4 @@ final class StubHttp implements HttpClientInterface
         return ($this->responder)();
     }
 }
+

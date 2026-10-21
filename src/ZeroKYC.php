@@ -90,6 +90,17 @@ final class ZeroKYC
     }
 
     /**
+     * Settlement asset catalog as a plain list of per-asset arrays:
+     * asset_id, ticker, network, network_label, display, decimals,
+     * display_decimals, volatile, confirmations, direct_mode.
+     */
+    public function assets(): array
+    {
+        $data = $this->client->assets()->json();
+        return $data['data'] ?? [];
+    }
+
+    /**
      * Verify a webhook delivery. Uses the webhook_secret from the config when
      * set; pass an explicit secret when merchants configure it per endpoint.
      *
