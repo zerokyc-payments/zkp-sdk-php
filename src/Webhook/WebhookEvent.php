@@ -8,7 +8,7 @@ namespace ZeroKYC\Webhook;
  * Verified webhook event (the decoded payload of a signature-checked body).
  *
  * Typical payloads: payment.detected, payment.confirmed, payment.underpaid,
- * invoice.created, invoice.expired, invoice.canceled, sweep.failed,
+ * invoice.created, invoice.expired, invoice.canceled,
  * platform_invoice, suspension, webhook.test.
  */
 final class WebhookEvent
